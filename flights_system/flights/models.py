@@ -17,6 +17,9 @@ class FlightSearchModel(models.Model):
     def __str__(self):
         return f"{self.id}: {self.Origin} to {self.Destination}"
 
+    def is_valid_flight(self):
+        return self.Origin != self.Destination and self.Duration >= 0
+
 
 class PassengerListModel(models.Model):
     firstName = models.CharField(max_length=64)
