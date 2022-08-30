@@ -1,5 +1,5 @@
-from multiprocessing.connection import Client
-from django.test import TestCase
+from django.db.models import Max
+from django.test import Client, TestCase
 
 # Create your tests here.
 
@@ -41,7 +41,39 @@ class flightTestCase(TestCase):
         self.assertFalse(Flight.is_valid_flight())
 
     def test_index(self):
-        Client = Client()
-        Response = Client.get("/flights/")
+        Clients = Client()
+        Response = Clients.get("/flights/")
         self.assertEqual(Response.status_code, 200)
         self.assertEqual(Response.context["flights"].count(), 3)
+
+    def test_valid_page(self):
+        a1 = AirportsAvailableModel.objects.get(code="AAA")
+        Flight = FlightSearchModel.objects.get(Origin = a1, Destination = a1)
+        Clients = Client()
+        Response = Clients.get(f"/flights/{Flight.id}")
+        self.assertEqual(Response.status_code, 200)
+
+    def test_invalid_page(self):
+        maxId = FlightSearchModel.objects.all().aggregate(Max("id"))["id__max"]
+        Clients = Client()
+        Response = Clients.get(f"/flights/{maxId + 1}")
+        self.assertEqual(Response.status_code, 404)
+
+    def test_passenger(self):
+        Flight = FlightSearchModel.objects.get(pk=1)
+        Passenger = PassengerListModel.objects.create(firstName="Maria", lastName="Pamonnhas")
+        Flight.passenger.add(Passenger)
+
+        Clients = Client()
+        Response = Clients.get(f"/flights/{Flight.id}")
+        self.assertEqual(Response.status_code, 200)
+        self.assertEqual(Response.context["passengers"].count(), 1)
+
+    def non_passenger(self):
+        Flight = FlightSearchModel.objects.get(pk=1)
+        Passenger = PassengerListModel.objects.create(firstName="Jucelino", lastName="Kubtchek")
+
+        Clients = Client()
+        Response = Clients.get(f"/flights/{Flight.id}")
+        self.assertEqual(Response.status_code, 200)
+        self.assertEqual(Response.context["non_passenger"].count(), 1)

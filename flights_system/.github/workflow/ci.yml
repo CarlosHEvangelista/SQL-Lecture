@@ -1,0 +1,13 @@
+name: Testing
+on: push
+
+
+jobs:
+  Test_my_code:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run django unit test
+      run : 
+        pip3 install --user django
+        python3 manage.py tests
