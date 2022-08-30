@@ -3,7 +3,7 @@ on: push
 
 
 jobs:
-  Test_my_code:
+  test_my_code:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
